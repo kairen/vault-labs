@@ -1,0 +1,69 @@
+version: '3.9'
+
+networks:
+  hashicorp:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.10.0/24
+
+volumes:
+  vault-data: {}
+  consul-server-data: {}
+  consul-worker-data: {}
+
+services:
+  consul:
+    image: hashicorp/consul:1.9.3
+    container_name: consul-server
+    restart: always
+    volumes:
+    - ./consul/server.json:/consul/config/server.json:ro
+    - consul-server-data:/consul/data
+    networks:
+      hashicorp:
+        ipv4_address: 172.16.10.10
+    ports:
+    - 8500:8500
+    - 8600:8600/tcp
+    - 8600:8600/udp
+    command: agent
+
+  consul-worker:
+    image: hashicorp/consul:1.9.3
+    container_name: consul-client
+    restart: always
+    volumes:
+    - ./consul/client.json:/consul/config/client.json:ro
+    - consul-worker-data:/consul/data
+    networks:
+      hashicorp:
+        ipv4_address: 172.16.10.20
+    command: agent
+    depends_on:
+    - consul
+
+  vault:
+    image: "vault:1.7.1"
+    init: true
+    container_name: vault
+    restart: always
+    volumes:
+    - ./vault/config:/vault/config:ro
+    - ./vault/policies:/vault/policies:ro
+    - vault-data:/vault/data
+    ports:
+    - 8200:8200
+    cap_add:
+    - IPC_LOCK
+    networks:
+      hashicorp:
+        ipv4_address: 172.16.10.30
+    environment:
+    - VAULT_ADDR=http://127.0.0.1:8200
+    - VAULT_API_ADDR=http://172.16.10.30:8200
+    - VAULT_CLUSTER_ADDR=http://172.16.10.30:8201
+    command: "server"
+    depends_on:
+    - consul

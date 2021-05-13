@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  labels:
+    app: vault
+  namespace: vault
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8200
+    targetPort: 8200
+    protocol: TCP
+    name: http
+  - port: 8201
+    targetPort: 8201
+    protocol: TCP
+    name: https-internal
+  - port: 8202
+    targetPort: 8202
+    protocol: TCP
+    name: http-rep
+  selector:
+    app: vault
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault
+  labels:
+    app: vault
+  namespace: vault
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      containers:
+      - name: vault
+        image: vault:1.7.1
+        args: ["server"]
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: VAULT_ADDR
+          value: "http://127.0.0.1:8200"
+        - name: VAULT_API_ADDR
+          value: "http://$(POD_IP):8200"
+        - name: VAULT_LOCAL_CONFIG
+          value: |
+            {
+              "log_level" : "DEBUG",
+              "backend": {
+                "consul": {
+                  "address": "consul:8500",
+                  "path": "vault/",
+                  "scheme": "http"
+                }
+              },
+              "listener": {
+                "tcp" : {
+                  "address": "0.0.0.0:8200",
+                  "tls_disable": 1
+                }
+              },
+              "ui": true
+            }
+            
+        ports:
+        - containerPort: 8200
+          name: http
+          protocol: TCP
+        - containerPort: 8201
+          name: https-internal
+          protocol: TCP
+        - containerPort: 8202
+          name: http-rep
+          protocol: TCP
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
+      - name: consul-vault-agent
+        image: hashicorp/consul:1.9.3
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        args:
+        - "agent"
+        - "-retry-join=consul-0.consul.$(NAMESPACE).svc.cluster.local"
+        - "-retry-join=consul-1.consul.$(NAMESPACE).svc.cluster.local"
+        - "-retry-join=consul-2.consul.$(NAMESPACE).svc.cluster.local"
+        - "-config-file=/consul/myconfig/config.json"
+        - "-domain=cluster.local"
+        - "-datacenter=dc1"
+        - "-disable-host-node-id"
+        - "-node=vault-1"
+        volumeMounts:
+        - name: config
+          mountPath: /consul/myconfig
+      volumes:
+        - name: config
+          configMap:
+            name: consul

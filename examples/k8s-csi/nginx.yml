@@ -1,0 +1,27 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: webapp-sa
+  namespace: vault
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: nginx
+  namespace: vault
+spec:
+  serviceAccountName: webapp-sa
+  containers:
+  - image: nginx
+    name: nginx
+    volumeMounts:
+    - name: secrets-store-inline
+      mountPath: "/mnt/secrets-store"
+      readOnly: true
+  volumes:
+    - name: secrets-store-inline
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: vault-database

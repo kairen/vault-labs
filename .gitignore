@@ -1,0 +1,26 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.out
+*-stdout
+*-stderr
+
+.DS_Store
+vendor/
+out/
+tmp/
+test.xml
+.vscode/
+.secrets
+.vagrant
+.keys
+.venv
+*.retry
+
+hosts
+.rhel-secret
+release
+inventory/gene

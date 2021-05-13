@@ -1,0 +1,7 @@
+{
+    "node_name": "consul-worker",
+    "data_dir": "/consul/data",
+    "retry_join":[
+        "consul"
+     ]
+}

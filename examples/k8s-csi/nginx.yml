@@ -2,13 +2,11 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: webapp-sa
-  namespace: vault
 ---
 kind: Pod
 apiVersion: v1
 metadata:
   name: nginx
-  namespace: vault
 spec:
   serviceAccountName: webapp-sa
   containers:

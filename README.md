@@ -17,9 +17,9 @@ Run the following commands for starting a Kubernetes cluster by minikube, and de
 $ minikube start --cpus=4 --memory=8g
 $ kubectl get no
 $ kubectl apply -f deploy/k8s/
-$ kubectl apply -f deploy/k8s/vault
-$ kubectl apply -f deploy/k8s/secrets-store-csi
-$ kubectl apply -f deploy/k8s/vault-secret-csi
+$ kubectl apply -f deploy/k8s/vault \
+    -f deploy/k8s/secrets-store-csi \
+    -f deploy/k8s/vault-secret-csi
 
 $ kubectl -n vault get po,svc
 $ kubectl -n vault port-forward service/vault 8200:8200
@@ -27,6 +27,7 @@ $ kubectl -n vault port-forward service/vault 8200:8200
 > Access UI from [127.0.0.1:8200](http://127.0.0.1:8200/ui/)
 
 Open a new terminal tab to init Vault and enable secret/auth engine by the following commands:
+
 ```sh
 $ kubectl -n vault run vault-client --image vault:1.7.1 \
     --env=VAULT_ADDR="http://vault:8200" \
@@ -69,7 +70,9 @@ EOF
 
 $ vault write auth/kubernetes/role/database \
     bound_service_account_names=webapp-sa \
-    bound_service_account_namespaces=vault \
+    bound_service_account_namespaces=default \
     policies=internal-app \
     ttl=20m
+
+$ vault read auth/kubernetes/role/database
 ```

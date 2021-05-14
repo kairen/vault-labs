@@ -34,6 +34,8 @@ $ kubectl -n vault run vault-client --image vault:1.7.1 \
     --rm --tty -i --force -- /bin/sh
 
 $ vault operator init
+$ vault operator unseal
+$ vault status
 
 $ export VAULT_TOKEN=<ROOT_TOKEN>
 $ vault secrets enable -version=2 -path=secret kv

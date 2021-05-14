@@ -6,5 +6,5 @@ $ kubectl apply -f secret-provider-class.yml
 $ kubectl get secretproviderclasses vault-database -o yaml
 $ kubectl apply -f nginx.yml 
 
-$ kubectl -n vault exec -ti nginx -- cat /mnt/secrets-store/db-password
+$ kubectl exec -ti nginx -- cat /mnt/secrets-store/db-password
 ```

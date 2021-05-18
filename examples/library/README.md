@@ -1,4 +1,4 @@
-# API Example
+# Go Library
 Run the following commands for starting this example:
 
 ```sh
@@ -7,8 +7,8 @@ $ kubectl -n vault run vault-client --image vault:1.7.1 \
     --rm --tty -i --force -- /bin/sh
 
 $ vault kv put secret/api/config db_username='api' \
-db_password='r00tme_my_db' \
-ttl='30s'
+    db_password='r00tme_my_db' \
+    ttl='30s'
 
 $ vault kv get secret/api/config
 $ vault policy write internal-api - <<EOF
@@ -18,10 +18,10 @@ path "secret/data/api/*" {
 EOF
 
 $ vault token create -display-name=api-token -policy=internal-api 
-$ vault token lookup
 ```
+> Copy the `token` from console output.
 
-(optional)If you want to login by user/password, please follow as below:
+(Optional) If you want to login by user/password, please follow as below:
 
 ```sh
 $ vault auth enable userpass
@@ -34,21 +34,30 @@ $ vault login -method=userpass \
     password=r00tme
 ```
 
-## Run example by Go
+## Run example
 Open a new terminal tab to run example by Go:
 
 ```sh
 $ export VAULT_ADDR="http://127.0.0.1:8200"
 $ export VAULT_TOKEN=<API_TOKEN>
 $ go run main.go
+DB username: api
+DB password: r00tme_my_db
 ```
 
-(optional)If you want to login by user/password, please follow as below:
+(Optional) If you want to login by user/password, please follow as below:
 
 ```sh
 $ export VAULT_ADDR="http://127.0.0.1:8200"
 $ export VAULT_USER=api
 $ export VAULT_PASSOWRD=r00tme
 $ go run main.go
+DB username: api
+DB password: r00tme_my_db
 ```
 
+
+# References
+
+- https://www.vaultproject.io/api/libraries#go
+- https://github.com/hashicorp/vault/tree/master/api

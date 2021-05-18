@@ -1,14 +1,14 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: webapp-sa
+  name: nginx-sa
 ---
 kind: Pod
 apiVersion: v1
 metadata:
   name: nginx
 spec:
-  serviceAccountName: webapp-sa
+  serviceAccountName: nginx-sa
   containers:
   - image: nginx
     name: nginx
@@ -22,4 +22,4 @@ spec:
         driver: secrets-store.csi.k8s.io
         readOnly: true
         volumeAttributes:
-          secretProviderClass: vault-database
+          secretProviderClass: vault-nginx-app

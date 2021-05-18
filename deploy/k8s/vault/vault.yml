@@ -1,4 +1,29 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-config
+  namespace: vault
+data:
+  config.json: |
+    {
+      "log_level" : "DEBUG",
+      "backend": {
+        "consul": {
+          "address": "consul:8500",
+          "path": "vault/",
+          "scheme": "http"
+        }
+      },
+      "listener": {
+        "tcp" : {
+          "address": "0.0.0.0:8200",
+          "tls_disable": 1
+        }
+      },
+      "ui": true
+    }
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: vault
@@ -55,25 +80,10 @@ spec:
         - name: VAULT_API_ADDR
           value: "http://$(POD_IP):8200"
         - name: VAULT_LOCAL_CONFIG
-          value: |
-            {
-              "log_level" : "DEBUG",
-              "backend": {
-                "consul": {
-                  "address": "consul:8500",
-                  "path": "vault/",
-                  "scheme": "http"
-                }
-              },
-              "listener": {
-                "tcp" : {
-                  "address": "0.0.0.0:8200",
-                  "tls_disable": 1
-                }
-              },
-              "ui": true
-            }
-            
+          valueFrom:
+            configMapKeyRef:
+              name: vault-config
+              key: config.json
         ports:
         - containerPort: 8200
           name: http
@@ -111,4 +121,4 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: consul
+            name: consul-config

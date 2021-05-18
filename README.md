@@ -19,14 +19,15 @@ $ kubectl get no
 $ kubectl apply -f deploy/k8s/
 $ kubectl apply -f deploy/k8s/vault \
     -f deploy/k8s/secrets-store-csi \
-    -f deploy/k8s/vault-secret-csi
+    -f deploy/k8s/vault-secret-csi \
+    -f deploy/k8s/vault-injector
 
 $ kubectl -n vault get po,svc
 $ kubectl -n vault port-forward service/vault 8200:8200
 ```
 > Access UI from [127.0.0.1:8200](http://127.0.0.1:8200/ui/)
 
-Open a new terminal tab to init Vault and enable secret/auth engine by the following commands:
+Open a new terminal tab to init Vault by kubectl and Vault:
 
 ```sh
 $ kubectl -n vault run vault-client --image vault:1.7.1 \
@@ -40,18 +41,8 @@ $ vault status
 $ export VAULT_TOKEN=<ROOT_TOKEN>
 $ vault secrets enable -version=2 -path=secret kv
 $ vault auth enable kubernetes
-```
 
-Put and get kv into Vault:
-
-```sh
-$ vault kv put secret/db-pass password="db-secret-password"
-$ vault kv get secret/db-pass
-```
-
-Configure the Kubernetes authentication method to use the service account token:
-
-```sh
+# Configure the Kubernetes authentication method to use the service account token:
 $ vault write auth/kubernetes/config \
     issuer="https://kubernetes.default.svc.cluster.local" \
     token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
@@ -61,20 +52,8 @@ $ vault write auth/kubernetes/config \
 $ vault read auth/kubernetes/config
 ```
 
-Write out the policy named internal-app:
+### Run examples
 
-```sh
-$ vault policy write internal-app - <<EOF
-path "secret/data/db-pass" {
-  capabilities = ["read"]
-}
-EOF
-
-$ vault write auth/kubernetes/role/database \
-    bound_service_account_names=webapp-sa \
-    bound_service_account_namespaces=default \
-    policies=internal-app \
-    ttl=20m
-
-$ vault read auth/kubernetes/role/database
-```
+- [Library](examples/library)
+- [Vault Agent](examples/vault-agent)
+- [Secrets Store CSI](examples/secrets-store-csi)

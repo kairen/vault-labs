@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: consul
+  name: consul-config
   namespace: vault
 data:
   config.json: |
@@ -134,4 +134,4 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: consul
+            name: consul-config

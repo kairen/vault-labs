@@ -1,4 +1,4 @@
-# Vault + Kubernetes Workshop
+# Vault + Kubernetes Labs
 This repo contains examples that cover various use cases and functionality for Hashicorp Vault + Kubernetes.
 
 ## What you’ll need
